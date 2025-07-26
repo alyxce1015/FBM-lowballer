@@ -46,19 +46,19 @@ puppeteer.use(StealthPlugin());
 
 
     // Search term Update if changing search
-    const searchTerm = 'bike';
+    const searchTerm = 'wrx hatchback';
 
 
     await page.goto('https://www.facebook.com/marketplace', { waitUntil: 'networkidle2' });
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    await page.waitForSelector('input[placeholder*="Search Marketplace"]', { timeout: 10000 });
+    await page.waitForSelector('input[placeholder*="Search Marketplace"]', { timeout: 3000 });
     await page.click('input[placeholder*="Search Marketplace"]', { delay: 100 });
     await page.keyboard.type(searchTerm, { delay: 100 });
     await page.keyboard.press('Enter');
 
     console.log(`Triggered real search for: ${searchTerm}`);
-    await page.waitForSelector('a[href*="/marketplace/item/"]', { timeout: 10000 });
+    await page.waitForSelector('a[href*="/marketplace/item/"]', { timeout: 3000 });
 
     console.log(`🔍 Searching for: ${searchTerm}.....`);
 
@@ -77,7 +77,7 @@ puppeteer.use(StealthPlugin());
             unique.add(href);
             links.push(href);
         }
-        if (links.length >= 10) break;
+        if (links.length >= 1) break;
         }
 
         return links;
@@ -85,13 +85,56 @@ puppeteer.use(StealthPlugin());
     );
     console.log(`✅ Found ${listingLinks.length} listings. Opening each one...`);
 
+    
+
+
     // loop through listings and open each with 1.5s delay
     for (const [i, link] of listingLinks.entries()) {
         console.log(`➡️  Opening listing ${i + 1}: ${link}\n`);
         await page.goto(link, { waitUntil: 'networkidle2' });
+        await new Promise(resolve => setTimeout(resolve, 3000)); // delay between messages
+        await page.screenshot({ path: `listing-${i + 1}.png` });
+
+        try {
+          const message = "Stick it in yo butt twinnn"; // change message
+
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Click fixed coordinates to focus the message input
+        await page.mouse.click(1550, 730); // (x, y)
+        
+        
+        // dot debugger
+        // await page.evaluate(() => {
+        //   const dot = document.createElement('div');
+        //   dot.style.position = 'fixed';
+        //   dot.style.width = '10px';
+        //   dot.style.height = '10px';
+        //   dot.style.background = 'red';
+        //   dot.style.top = '800px';
+        //   dot.style.left = '1550px';
+        //   dot.style.zIndex = '99999';
+        //   document.body.appendChild(dot);
+        // });
+
+
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Type your message
+        await page.keyboard.type(message, { delay: 50 });
+        console.log(`📝 Typed message via manual click: "${message}"`);
         await new Promise(resolve => setTimeout(resolve, 500));
+        // Click the Send button
+        await page.mouse.click(1550, 805); // (x, y)
+
+            } catch (err) {
+                break
+            }
+        
+        await new Promise(resolve => setTimeout(resolve, 1000)); // delay between listings
+        
     }
-    console.log("All listings Viewed.....")
+    console.log(`Just lowballed ${listingLinks.length} losers. Fuck Yo Shit!!!`)
 }
 
 
