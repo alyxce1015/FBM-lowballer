@@ -77,7 +77,7 @@ puppeteer.use(StealthPlugin());
             unique.add(href);
             links.push(href);
         }
-        if (links.length >= 1) break;
+        if (links.length >= 3) break;
         }
 
         return links;
