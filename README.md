@@ -1,4 +1,4 @@
-# Facebook MarketPlace Bot
+# FBM Lowball bot 
 
 harmless joke. Low level program but still fun to use
 
