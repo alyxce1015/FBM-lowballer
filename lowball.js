@@ -39,43 +39,59 @@ puppeteer.use(StealthPlugin());
 
     await page.reload({ waitUntil: 'networkidle2' });
     console.log('🔄 Reloaded with localStorage');
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    
+    console.log("Waiting for localStorage....")
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+
 
     // Search term Update if changing search
-    const searchTerm = 'rx7';
-    const searchUrl = `https://www.facebook.com/marketplace/?query=${encodeURIComponent(searchTerm)}` // fills in query to my search term (note: every search is a query in FB)
+    const searchTerm = 'bike';
 
-    await page.goto(searchUrl, {waitUntil: 'networkidle2'});
+
+    await page.goto('https://www.facebook.com/marketplace', { waitUntil: 'networkidle2' });
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    await page.waitForSelector('input[placeholder*="Search Marketplace"]', { timeout: 10000 });
+    await page.click('input[placeholder*="Search Marketplace"]', { delay: 100 });
+    await page.keyboard.type(searchTerm, { delay: 100 });
+    await page.keyboard.press('Enter');
+
+    console.log(`Triggered real search for: ${searchTerm}`);
+    await page.waitForSelector('a[href*="/marketplace/item/"]', { timeout: 10000 });
+
     console.log(`🔍 Searching for: ${searchTerm}.....`);
 
     await page.waitForSelector('a[href*="/marketplace/item/"]');
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-  const listingLinks = await page.$$eval('a[href*="/marketplace/item/"]', (anchors, searchTerm) => {
-    const unique = new Set();
-    const results = [];
+    const listingLinks = await page.$$eval(
+    'a[href*="/marketplace/item/"]',
+    anchors => {
+        const unique = new Set();
+        const links = [];
 
-    for (const anchor of anchors) {
-      const titleSpan = anchor.querySelector('span[dir="auto"]');
-      const title = titleSpan?.innerText?.toLowerCase() || '';
-      const href = anchor.href;
+        for (const anchor of anchors) {
+        const href = anchor.href;
+        if (!unique.has(href)) {
+            unique.add(href);
+            links.push(href);
+        }
+        if (links.length >= 10) break;
+        }
 
-      if (!unique.has(href) && title.includes(searchTerm.toLowerCase())) {
-        results.push({ title, href });
-        console.log(`Added: ${title}`)
-        unique.add(href);
-      }
+        return links;
     }
+    );
+    console.log(`✅ Found ${listingLinks.length} listings. Opening each one...`);
 
-    return results;
-  }, searchTerm); 
-  
-  console.log(`✅ Found ${listingLinks.length} listings with "${searchTerm}" in the title`);
-
-  for (const [i, { title, href }] of listingLinks.entries()) {
-    console.log(`➡️ Opening listing ${i + 1}: ${title}`);
-    await page.goto(href, { waitUntil: 'networkidle2' });
-    await page.waitForTimeout(4000);
-  }
+    // loop through listings and open each with 1.5s delay
+    for (const [i, link] of listingLinks.entries()) {
+        console.log(`➡️  Opening listing ${i + 1}: ${link}\n`);
+        await page.goto(link, { waitUntil: 'networkidle2' });
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    console.log("All listings Viewed.....")
 }
 
 
